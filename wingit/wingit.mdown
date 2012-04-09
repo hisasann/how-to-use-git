@@ -308,7 +308,7 @@ gitの良いところでもありますが、ローカルリポジトリで複�
 
 ここでひとつ面白いパターンをご紹介します。
 
-![showlog.png](showlog.png)
+![showlog.png](https://github.com/hisasann/how-to-use-git/raw/master/wingit/showlog.png)
 
 この画像の状態は、
 
