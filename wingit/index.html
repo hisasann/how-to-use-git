@@ -1,0 +1,421 @@
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  
+  <title>Windowsでgitを使う方法</title>
+  <link rel="stylesheet" href="./wingit_files/style.css" type="text/css" charset="utf-8" media="screen">
+  <link rel="stylesheet" href="./wingit_files/style(1).css" type="text/css" charset="utf-8" media="screen">
+  <link rel="stylesheet" href="./wingit_files/style(2).css" type="text/css" charset="utf-8" media="screen">
+  <link rel="stylesheet" href="./wingit_files/style(3).css" type="text/css" charset="utf-8" media="screen">
+  <link rel="stylesheet" href="./wingit_files/style(4).css" type="text/css" charset="utf-8" media="screen">
+  <link rel="stylesheet" href="./wingit_files/style(5).css" type="text/css" charset="utf-8" media="screen">
+  <link rel="stylesheet" href="./wingit_files/print.css" type="text/css" charset="utf-8" media="print">
+  </head>
+<body id="tm_webpreview_body" class="shiny">
+  <div id="tm_webpreview_content" class="shiny">
+<!--<base href="tm-file:///Users/hisamatsu/Dropbox/code/git/git資料/wingit.mdown">--><base href=".">
+<h1 id="windowsgit">Windowsでgitを使う方法</h1>
+
+<hr />
+
+<p>Windowsでは<strong>msysgit</strong>（git本体）とGUIツールの<strong>TortoiseGIT</strong>を使います。</p>
+
+<h2 id="tortoisegit">TortoiseGITをインストールするまで</h2>
+
+<h3 id="msysgit">msysgitのインストール</h3>
+
+<p><a href="http://code.google.com/p/msysgit/downloads/list">Downloads - msysgit - Git for Windows - Google Project Hosting</a></p>
+
+<p>から、<strong>msysGit-fullinstall-1.7.9-preview20120201.exe</strong>をダウンロードします。</p>
+
+<p>exeファイルをダブルクリックします。</p>
+
+<p>展開先を「C:\msysgit」のままにして実行しました。</p>
+
+<p>もし他のパスがよい場合は適宜変更してください。</p>
+
+<p><a href="https://github.com/msysgit/msysgit/wiki/InstallMSysGit">InstallMSysGit · msysgit/msysgit Wiki</a>
+に書いてある以下のシェルを実行します。</p>
+
+<pre><code>/share/msysGit/initialize.sh
+</code></pre>
+
+<p>このmsysgitの面白いところが、Unixコマンドが打てることです。</p>
+
+<p>llとかpwdとかUnix上で使っていたコマンドが使えます。</p>
+
+<p>サイドこのプロンプトを開きたいときは、</p>
+
+<pre><code>C:\msysgit\msysgit\msys.bat
+</code></pre>
+
+<p>を実行します。</p>
+
+<p>なので、このファイルのショートカットを作っておくと便利かもしれません。</p>
+
+<h3 id="gitgitconfig">gitの設定ファイル「.gitconfig」の場所</h3>
+
+<pre><code>C:\Users\hoge\.gitconfig
+</code></pre>
+
+<p>ここにおいてあります。</p>
+
+<p>せっかくなので、コンソールからグローバルなユーザー名とメールアドレスを設定しちゃいましょう。</p>
+
+<p>msys.batを起動して、以下のコマンドを打ちます。</p>
+
+<p>ユーザー名とメールアドレスは適宜読み替えてください。</p>
+
+<pre><code>git config --global user.name "hoge"
+git config --global user.email "hoge@hoge.com"
+</code></pre>
+
+<p>では環境設定を表示してみましょう。</p>
+
+<pre><code>git var -l
+</code></pre>
+
+<p>user.nameとuser.emailがちゃんと反映されています。</p>
+
+<pre><code>core.symlinks=false
+core.autocrlf=true
+color.diff=auto
+color.status=auto
+color.branch=auto
+color.interactive=true
+pack.packsizelimit=2g
+help.format=html
+http.sslcainfo=/mingw/bin/curl-ca-bundle.crt
+sendemail.smtpserver=/mingw/bin/msmtp.exe
+diff.astextplain.textconv=astextplain
+rebase.autosquash=true
+http.proxy=
+user.name=hoge
+user.email=hoge@hoge.com
+core.repositoryformatversion=0
+core.filemode=false
+core.bare=false
+core.logallrefupdates=true
+core.symlinks=false
+core.ignorecase=true
+core.hidedotfiles=dotGitOnly
+remote.origin.fetch=+refs/heads/*:refs/remotes/origin/*
+remote.origin.url=c:/_/dev/gittestrepos/test.git/
+branch.master.remote=origin
+branch.master.merge=refs/heads/master
+GIT_COMMITTER_IDENT=hoge hoge@hoge.com 1331271139 +0900
+GIT_AUTHOR_IDENT=hoge hoge@hoge.com 1331271139 +0900
+GIT_EDITOR=vi
+GIT_PAGER=less
+</code></pre>
+
+<h3 id="tortoisegit">TortoiseGITのインストール</h3>
+
+<p><a href="http://code.google.com/p/tortoisegit/downloads/list">Downloads - tortoisegit - Porting TortoiseSVN to TortoiseGIT - Google Project Hosting</a></p>
+
+<p>から、TortoiseGit-1.7.7.0-64bit.msiをダウンロードします。</p>
+
+<p>32bitな方は、32bitのほうをダウンロードしてください。</p>
+
+<p>これを呼んだので、特に何も迷わずに次へ次へと進んでみました。</p>
+
+<p>これでインストールは完了。</p>
+
+<h3 id="ssh_keygen">ssh-keygenで秘密鍵、公開鍵を作成する</h3>
+
+<p>TortoiseGitに付属しているPuttygenから作成することもできるのですが、一般的なsshキーファイルではなくPutty用のファイルになってしまうので、あえてmsysgitからssh-keygenを行い、さらにそれをPuttygenを使って変換してTortoiseGitで使えるようにします。</p>
+
+<p>こうしておけば、<strong>msysgit</strong>からの操作、<strong>TortoiseGit</strong>からの操作、の両方ができるのでローカルに構築するgit環境としてはこちらのほうがよいかと思います。</p>
+
+<pre><code>$ C:\msysgit\msysgit\msys.bat
+</code></pre>
+
+<p>では、gitを起動して、</p>
+
+<pre><code>$ $ ssh-keygen -t rsa
+</code></pre>
+
+<p>を実行します。</p>
+
+<p>すると、「C:\Users\hoge」と自分のユーザーの場所に<strong>.ssh</strong>フォルダが作成されます。</p>
+
+<p>この中にある<strong>id_rsa</strong>ファイルがローカルで必要になる<strong>秘密鍵</strong>。</p>
+
+<p>id_rsa.pubファイルがgitサーバーで必要になる<strong>公開鍵</strong>になります。</p>
+
+<p>そして、各ユーザー管理サイトに「<strong>.ssh/id_rsa.pub</strong>」ファイルの中身をSSH Keyとして登録します。</p>
+
+<p>次に、TortoiseGit側の設定をします。</p>
+
+<p>「スタートメニュー→TortoiseGit→Puttygen」を起動します。</p>
+
+<p>起動したら、<strong>Load</strong>ボタンをクリックします。</p>
+
+<p>ファイル選択ダイアログのファイルタイプをすべてにして<strong>id_rsa</strong>を選択します。</p>
+
+<p>PuTTYgen Noticeというダイアログが出ますが、OKをクリックして閉じます。</p>
+
+<p><strong>Save private key</strong>ボタンをクリックします。</p>
+
+<p><strong>はい</strong>をクリックします。</p>
+
+<p>適当な名前をファイル名に入れて、保存します。</p>
+
+<p>これで、sshキーの設定は終わりです。</p>
+
+<hr />
+
+<h2 id="git">gitを使ってみる</h2>
+
+<h3 id="clone">リモートリポジトリからダウンロードする（clone）</h3>
+
+<p>まずは、ローカルにリモートリポジトリの内容をダウンロードします。
+適当なディレクトリで、「右クリック→Git Clone…」を選択します。</p>
+
+<p>Url欄には<strong>リポジトリのURL</strong>を、Directoryにはclone先（ダウンロード先）を指定します。</p>
+
+<p>Okボタンを押すと、cloneが始まりローカルにリモートリポジトリのファイルたちがダウンロードされます。</p>
+
+<h3 id="addcommit">編集したファイルをローカルリポジトリにコミットする（add、commit）</h3>
+
+<p>ためしにファイルを追加してみましょう。</p>
+
+<p>README.txtというファイルを作ってみます。</p>
+
+<p>そして、何もないところで「右クリック→Git Commit -> &#8220;master&#8221;…」を選択します。</p>
+
+<p>すると画面上部にMessage領域、下に変更点のあるファイルが表示されています。</p>
+
+<p>適当に「初めてのコミット」と入力し、README.txtのチェックを付けて、OKボタンを押してみましょう。</p>
+
+<p>これは、gitコマンドで言うところの、</p>
+
+<pre><code>$ git add README.txt
+$ git commit -m '初めてのコミット'
+</code></pre>
+
+<p>が行われたことと同様になります。</p>
+
+<p>つまり、ローカルのリポジトリに対して、コミットが完了していて、リモートリポジトリにはまだpushしていません。</p>
+
+<h3 id="push">リモートリポジトリに反映する（push）</h3>
+
+<p><strong>git pull</strong>をすることでリモートリポジトリに反映できます（SVNで言うところのコミットですね）</p>
+
+<p>何もないところで「右クリック→TortoiseGit→Push」を選択します。</p>
+
+<p>TortoiseGitのダイアログが表示されます。</p>
+
+<p>Remoteに<strong>origin</strong>（cloneしたらデフォルトで作られるリモート）が選択され、Remote Branchには<strong>master</strong>（cloneしたらデフォルトで作られるブランチ）が選択されています。</p>
+
+<p>これはローカルのブランチmasterをリモートのリポジトリoriginに反映するという意味になります。</p>
+
+<p>あとは、OKをクリックすれば<strong>git push</strong>の完成です。</p>
+
+<p>ここまでがSVNで言うところのコミットと同じことになります。</p>
+
+<p>gitでは、ローカルリポジトリを主軸と考え、ここにどんどんコミットしていきます。</p>
+
+<p>はじめは1コミットしたら1Pushをする感覚でよいと思います。</p>
+
+<p>ローカルで素早くコミットできるので、ある程度溜まってからでも特に問題はないと思いますが、なれるまでは上記がよいでしょう。</p>
+
+<h3 id="">コンフリクト（衝突）が発生してしまった場合</h3>
+
+<p>同じファイルを別々の人が修正、<strong>git push</strong>しようとするとコンフリクトしてしまう。</p>
+
+<p>Aさん</p>
+
+<pre><code>1.htmlに「hoge」と書きこむ。
+1.htmlをgit commitする。
+git pushする。
+</code></pre>
+
+<p>Bさん</p>
+
+<pre><code>1.htmlに「foo」と書きこむ。
+1.htmlをgit commitする。
+git pushする。       #1
+</code></pre>
+
+<p>上記手順を踏むと、#1のところで、エラーがでます。</p>
+
+<pre><code>git.exe push --progress  "origin" master:master
+
+To C:\_\dev\git\repos
+! [rejected]        master -&gt; master (non-fast-forward)
+error: failed to push some refs to 'C:\_\dev\git\repos'
+To prevent you from losing history, non-fast-forward updates were rejected
+Merge the remote changes (e.g. 'git pull') before pushing again.  See the
+'Note about fast-forwards' section of 'git push --help' for details.
+
+git did not exit cleanly (exit code 1)
+</code></pre>
+
+<p>これは、他の誰かがすでに<strong>git push</strong>をしているので、それをローカルリポジトリに落としてね。といっているので、<strong>git pull</strong>します。</p>
+
+<p>すると、</p>
+
+<pre><code>git.exe pull -v --progress      "origin"
+remote: Total 3 (delta 0), reused 0 (delta 0)
+From C:\
+3893bde..a9387c7  master     -&gt; origin/master
+Auto-merging README.txt
+CONFLICT (content): Merge conflict in README.txt
+Automatic merge failed; fix conflicts and then commit the result.
+
+git did not exit cleanly (exit code 1)
+</code></pre>
+
+<p>こんなコンフリクトしたよーという内容のメッセージが表示される。</p>
+
+<p>README.txtの中を開いてみると、</p>
+
+<pre><code>&lt;&lt;&lt;&lt;&lt;&lt;&lt; HEAD
+hoge
+=======
+foo
+&gt;&gt;&gt;&gt;&gt;&gt;&gt; a9387c7dc88f4db8d3872532cc08d5d262341ef2
+</code></pre>
+
+<p>のように、コンフリクトしている箇所が表示される。</p>
+
+<pre><code>hoge
+foo
+</code></pre>
+
+<p>最終的に、このようにしてコミットしてあげればコンフリクトが解決したことを意味する。</p>
+
+<p>実際には<strong>git add</strong>すれば解決したことになる。</p>
+
+<p>これで<strong>git push</strong>すれば完了。</p>
+
+<hr />
+
+<h3 id="">用語</h3>
+
+<h4 id="">作業ツリー（ワーキングツリー）</h4>
+
+<p><strong>git add</strong>していないファイルたちを追加・修正・削除を行った場合に、反映される。
+つまり何かしら作業を開始すると自動的に作業ツリーに反映される。</p>
+
+<h4 id="">インデックス</h4>
+
+<p><strong>git add</strong>したファイルが反映される。</p>
+
+<h4 id="head">HEAD</h4>
+
+<p>最後に<strong>git commit</strong>したポイント</p>
+
+<h4 id="head">HEAD^</h4>
+
+<p>最後に<strong>git commit</strong>したポイントのさらにもう1個前のポイント</p>
+
+<h4 id="head2">HEAD~2</h4>
+
+<p>最後に<strong>git commit</strong>したポイントのさらにもう2個前のポイント</p>
+
+<h4 id="orig_head">ORIG_HEAD</h4>
+
+<p><strong>git reset</strong>を行った場合に、<strong>git reset</strong>を取り消したい場合に使用する。
+つまりHEADを移動させたときの、処理をUNDOするポイント。</p>
+
+<hr />
+
+<h3 id="reset">複数コミットした場合にある特定のコミットまで戻りたい（reset）</h3>
+
+<p>gitの良いところでもありますが、ローカルリポジトリで複数回のコミットを行うことができます。</p>
+
+<p>ある作業の塊単位で、<strong>git commit</strong>しておけば、それだけcommitの履歴も綺麗になります。</p>
+
+<p>その場合に、複数回コミットしたが、あるファイルを<strong>git add</strong>するのを忘れてしまっていたため、もう一度コミットをやり直したいという場合です。</p>
+
+<p>そんなときにコミットをある特定のポイントに戻したい場合は、<strong>git reset</strong>を使います。</p>
+
+<p>何もないところで「右クリック→TortoiseGit→Show log」を選択します。</p>
+
+<p>ここでひとつ面白いパターンをご紹介します。</p>
+
+<p><img src="showlog.png" alt="showlog.png" title="" /></p>
+
+<p>この画像の状態は、</p>
+
+<ol>
+<li>リモートリポジトリからgit pull</li>
+<li>ファイルの修正</li>
+<li>ファイルのコミット</li>
+<li>さらにファイルの修正</li>
+</ol>
+
+<p>という作業をした場合になります。</p>
+
+<p>つまり、<strong>origin/master</strong>となっているところが、リモートリポジトリから<strong>git pull</strong>してきたポイント。
+<strong>master少し変更</strong>となっているところが、ローカルでの自分が行ったコミットポイント。
+<strong>Working dir changes</strong>となっているところが、コミット後にさらに修正したワーキングツリーのポイント。</p>
+
+<p>という感じになります。</p>
+
+<p>これは、gitを使い始めると当たり前のように起こる状態になりますが、ここでひとつ気をつけて下さい。</p>
+
+<p><strong>origin/master</strong>よりも前、つまりこのGUIでは下方向ですが、過去のものを選択して<strong>git reset</strong>は行わないようにしましょう。</p>
+
+<p>もしも過去の状態に戻したいなら<strong>git revert</strong>をして、その状態に戻したということを新規にコミットするようにしてください。</p>
+
+<p>すでに<strong>git push</strong>されたものを書き換えるのは、他のメンバーと整合性がとれなくなり、同期させるのが大変です。</p>
+
+<p>「時代は変えてはいけないのだよ。諸君。」</p>
+
+<p>リセットのタイプの解説は以下のとおり。</p>
+
+<p>&#8212;soft</p>
+
+<p>HEAD の位置のみを変更する。インデックス、ワーキングツリーには影響なし。</p>
+
+<p>&#8212;mixed (またはオプションなし)</p>
+
+<p>HEAD の位置とインデックスを変更する。ワーキングツリーには影響なし。</p>
+
+<p>&#8212;hard</p>
+
+<p>HEADの位置、インデックス、ワーキングツリーをすべて変更する。</p>
+
+<p>via <a href="http://d.hatena.ne.jp/murank/20110327/1301224770">git reset についてもまとめてみる</a></p>
+
+<p><a href="http://tsukamoto.tumblr.com/post/267736584">Gitの取消練習</a></p>
+
+<h3 id="">ローカルでの作業をいろいろしていたらよくわからなくなったので、もとにもどしたい。</h3>
+
+<p>何もないところで「右クリック→TortoiseGit→Show log」を選択します。</p>
+
+<p><strong>origin/master</strong>となっている行で「右クリック→Reset &#8220;master&#8221; to this…→Hard」を選びます。</p>
+
+<p>これで、自分のコミットをすべて無効にした状態になります。</p>
+
+<hr />
+
+<h2 id="gitconfig">おすすめ.gitconfig</h2>
+
+<pre><code>git config --global color.ui auto
+git config --global color.diff auto
+git config --global color.status auto
+git config --global color.branch auto
+
+git config --global alias.co "checkout"
+git config --global alias.st "status -sb"
+git config --global alias.lg "log --graph --pretty=oneline --decorate --date=short --abbrev-commit --branches"
+git config --global alias.b "branch"
+git config --global alias.br "branch -r"
+</code></pre>
+
+<hr />
+
+<p>あと、今回紹介していない内容はここ読めばだいたいのことが書かれています。</p>
+
+<p><a href="http://progit.org/book/ja/">Pro Git</a></p>
+
+<hr />
+
+<p>©2012 - <a href="http://hisasann.com">hisasann</a></p>
+
+	</div>
+
+
+</body></html>

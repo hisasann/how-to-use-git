@@ -1,0 +1,387 @@
+Macでgitを使う方法
+=
+
+---
+
+gitをインストールするまで
+-
+
+### Homebrewをインストールする
+
+[Homebrew](http://mxcl.github.com/homebrew/, "")
+
+Macportsでもよいですが、今後を考えるとHomebrewのほうがよいかもしれません。
+
+以下は2行ではなく1行として実行してください。
+
+	ruby -e "$(/usr/bin/curl -fksSL https://raw.github.com/mxcl/homebrew/master/Library/Contributions/install_homebrew.rb)"
+
+インストールはこれで完了です。
+
+（2012-03-16：バージョン0.8.1）
+
+
+### gitをインストールする
+
+	$ brew install git
+
+インストールはこれで完了です。
+
+
+### Homebrewをアップデートする
+
+一応ね！
+
+	$ brew update
+
+---
+
+ssh-keygenで鍵を作成する
+-
+
+### ssh-keygenでキーをまだ作成したことがない場合
+
+以下のコマンドでキーが作成されますでキーが作成されます。
+
+	$ ssh-keygen -t rsa
+
+これにより、
+
+	.ssh/id_rsa
+	.ssh/id_rsa.pub
+
+が作成されます。
+あとは、各ユーザー管理サイトに「**.ssh/id_rsa.pub**」ファイルの中身をSSH Keyとして登録します。
+
+
+### ssh-keygenでキーをすでに作成している場合（githubを使っているなど）
+
+gitでのユーザー管理は、**公開鍵暗号方式**を使っています。なので、秘密鍵と公開鍵の作成が必要です。
+
+以下のコマンドでキーが作成されます。
+
+	$ ssh-keygen -t rsa
+
+すでに**id_rsa**というファイルが存在する場合、たとえばgithubを使っている方など、
+
+	$ ssh-keygen -t rsa -f .ssh/gitorious_rsa
+
+のようにファイル名を指定して、キーを作成します。
+次に、
+
+	.ssh/config
+
+**config**ファイルを作成し、どのキーをどのHostの場合に使うかを定義します。
+
+	Host *
+	  StrictHostKeyChecking no
+	  ControlMaster auto
+	  ControlPath   /tmp/%r@%h:%p
+	  ServerAliveInterval 60
+	  HashKnownHosts no
+	  GSSAPIAuthentication no
+	  GSSAPIKeyExchange no
+	  AddressFamily inet
+
+	Host gitorious.sample.local
+	  Port 22
+	  Hostname gitorious.sample.local
+	  IdentityFile ~/.ssh/gitorious_rsa
+	  TCPKeepAlive yes
+	  IdentitiesOnly yes
+
+これにより**gitorious.sample.local**のリポジトリにアクセスする場合のSSH Keyは**.ssh/gitorious_rsa**が使われます。
+
+
+[参考資料 - github](http://help.github.com/mac-set-up-git/)
+
+---
+
+gitを使ってみる
+-
+
+### リモートリポジトリからダウンロードする（clone）
+
+まずは、ローカルにリモートリポジトリの内容をダウンロードします。
+
+	$ git clone git@gitorious.sample.local:repos/repos.git
+
+これで**repos**というディレクトリが作成されていると思います。
+中に入ってみましょう。
+
+	$ cd repos
+
+### ファイルを修正し変更ステータスを確認する（status）
+
+	$ vim README
+
+適当な文字を入力し保存します。
+これでこのファイルを編集したことになります。
+
+**git status**で変更点を確認してみましょう。
+
+	$ git status -sb
+
+sbはシンプルなstatusを表示するための引数です。
+
+結果以下のように表示されました。
+
+	## Initial commit on master
+	 M README
+
+変更したファイルREADMEが表示されました。
+
+このとき**M**という文字がREADMEの横に表示されていますが、これは**modified**になります。
+削除した場合は**D**が表示され、新規追加したファイルの場合は**??**が表示されていると思います。
+
+### 編集したファイルをローカルリポジトリにコミットする（add、commit）
+
+では、変更したファイルをコミットします。
+
+SVNではコミットとはリモートリポジトリに対してでしたが、gitのコミットとはあくまでも**ローカルリポジトリ**に対して行われます。
+
+さらにどのファイルをコミットするかは**git add**を使います。
+
+順を追って解説します。
+
+	$ git add README
+
+これでコミット対象にREADMEを含めたことになります。（まだコミットはされていません）
+
+	$ git commit -m "first commit"
+
+これでようやくローカルリポジトリにコミットしたことになります。
+
+まだリモートリポジトリには反映されていません。あくまでもローカルでのコミットになります。
+
+### リモートリポジトリに反映する（push）
+
+**git push**をすることでリモートリポジトリに反映できます（SVNで言うところのコミットですね）
+
+	$ git push origin master
+
+ローカルのmasterをリモートのoriginに反映するという意味になります。
+
+基本的にはファイルを編集、追加をし**git add**し、**git commit**していく作業がメインになり、最後に**git push**するというフローになると思います。
+
+### コンフリクト（衝突）が発生してしまった場合
+
+同じファイルを別々の人が修正、**git push**しようとするとコンフリクトしてしまう。
+
+Aさん
+
+	$ vim 1.html	#hogeと書きこむ
+	$ git commit -a -m 'hoge'
+	$ git push origin master
+
+Bさん
+
+	$ vim 1.html	#fooと書きこむ
+	$ git commit -a -m 'foo'
+	$ git push origin master	#1
+
+上記手順を踏むと、#1のところで、**git pull**してねと言われるので、してみると、
+
+	Auto-merging 1.html
+	CONFLICT (content): Merge conflict in 1.html
+	Automatic merge failed; fix conflicts and then commit the result.
+
+こんなコンフリクトしたよーという内容のメッセージが表示される。
+
+	$ vim 1.html
+
+をしてみると、
+
+	<<<<<<< HEAD
+	hoge
+	=======
+	foo
+	>>>>>>> 046658a2255fd924aaba0df5bb327cd9e319ae35
+
+のように、コンフリクトしている箇所が表示される。
+
+	hoge
+	foo
+
+最終的に、このようにして**git add**してあげればコンフリクトが解決したことを意味する。
+
+	$ git commit -m 'コンフリクト解消'
+	$ git push origin master
+
+で**git push**すれば完了。
+
+---
+
+### 用語
+
+#### 作業ツリー（ワーキングツリー）
+
+**git add**していないファイルたちを追加・修正・削除を行った場合に、反映される。
+つまり何かしら作業を開始すると自動的に作業ツリーに反映される。
+
+#### インデックス
+
+**git add**したファイルが反映される。
+
+#### HEAD
+
+最後に**git commit**したポイント
+
+#### HEAD^
+
+最後に**git commit**したポイントのさらにもう1個前のポイント
+
+#### HEAD~2
+
+最後に**git commit**したポイントのさらにもう2個前のポイント
+
+#### ORIG_HEAD
+
+**git reset**を行った場合に、**git reset**を取り消したい場合に使用する。
+つまりHEADを移動させたときの、処理をUNDOするポイント。
+
+---
+
+### **git add**したものを取り消したい（reset）
+
+ファイルの編集を行い、**git add**したが、今回はこのファイルをコミットしたくないパターン。
+
+	$ vim hoge
+	$ git add hoge
+
+**git reset**を使ってaddが取り消された状態になる。
+
+	$ git reset HEAD -- hoge
+
+これで作業ツリーはそのままで、インデックスの内容がクリアされる。
+
+---
+
+### 複数コミットした場合に1つ前の状態に戻りたい（reset）
+
+gitの良いところでもありますが、ローカルリポジトリで複数回のコミットを行うことができます。
+
+ある作業の塊単位で、**git commit**しておけば、それだけcommitの履歴も綺麗になります。
+
+その場合に、複数回コミットしたが、あるファイルを**git add**するのを忘れてしまっていたため、もう一度コミットをやり直したいという場合です。
+
+	$ touch hoge
+	$ git add hoge
+	$ git commit -m 'hoge-add'
+	$ vim hoge
+	$ touch foo					# ここをgit addしていない
+	$ git add hoge
+	$ git commit -m 'hoge-modify'
+
+こちらの操作では、本来fooというファイルもhoge-modifyのコミットに混ぜたかったのですが、間違えて**git add**するのを忘れています。
+そんなときにコミットをある特定のポイントに戻したい場合は、**git reset**を使います。
+
+	$ git reset --soft HEAD^
+
+**HEAD^**は用語でも触れていますが、最新のコミットの1つ前です。
+
+引数の解説は以下のとおり。
+
+--soft
+
+HEAD の位置のみを変更する。インデックス、ワーキングツリーには影響なし。
+
+--mixed (またはオプションなし)
+
+HEAD の位置とインデックスを変更する。ワーキングツリーには影響なし。
+
+--hard
+
+HEADの位置、インデックス、ワーキングツリーをすべて変更する。
+
+via [git reset についてもまとめてみる](http://d.hatena.ne.jp/murank/20110327/1301224770)
+
+補足として、2つ前に戻りたい場合は以下のようにする。
+
+	$ git reset --soft HEAD~2
+
+### git resetしたがポイントを間違えたのでgit resetをなかったことにしたい
+
+	$ git reset --soft ORIG_HEAD
+
+### git resetを2回以上行ってしまいORIG_HEADがもうどこか分からない
+
+**git reset**を2回以上行ってしまうと、ORIG_HEADが1回目の**git reset**のポイントになってしまいます。
+こうなってくると分けが分からないので、便利な機能**git reflog**で戻るポイントを探しだす。
+
+	$ git reflog
+
+して、戻りたいポイントを見つけ出し、
+
+	$ git reset --soft HEAD@{12}
+
+で、戻る。
+
+**git reset**と似ているので**git revert**がある。
+
+この違いは、
+
+**git reset**はコミットをなかったことにし、ログも残さないが、
+
+**git revert**はコミットをあるポイントに戻すというコミットを行う。
+結果、コミットログに[Revert] xxxxxのように書き込まれることになる。
+
+[Gitの取消練習](http://tsukamoto.tumblr.com/post/267736584)
+
+### ローカルでの作業をいろいろしていたらよくわからなくなったので、もとにもどしたい。
+
+とくにコミット
+
+	$ git reset --hard HEAD
+
+--hardは↑でも記載しているが、すべての変更をHEADの状態に戻すので、最後に**git pull**した状態に戻る。
+
+### git pushしたのをなかったことにしたい（使うな危険！）
+
+以下のようにすでに**git push**してしまった、という状況でやっぱりなかったことにするパターンです。
+
+	$ git vim hoge
+	$ git add hoge
+	$ git commit -m 'hoge'
+	$ git push origin master
+
+ただし、これはもう混乱のもとで、ここでたとえリモートリポジトリを強制的に書き換えたとしても、
+他のこのブランチで作業している人たちは、**git pull**してもこれと同じ状態に戻りません。
+
+まだよく理解できていませんが、各々が自分でローカルリポジトリで**git reset**する必要があると思っています。
+
+	$ git reset --hard HEAD^
+	$ git push -f origin HEAD:master
+
+なので、これはやめましょう！
+**git push**したら、強制的（-f）に書き換えるではなく、**git revert**を使い新たなコミットとして**git push**しましょう
+
+これは**git rebase**も同じで、基本的に**git push**したものにやってはいけない。
+やると分けがわからなくなる。
+
+「時代は変えてはいけないのだよ。諸君。」
+
+---
+
+おすすめ.gitconfig
+-
+
+	git config --global color.ui auto
+	git config --global color.diff auto
+	git config --global color.status auto
+	git config --global color.branch auto
+
+	git config --global alias.co "checkout"
+	git config --global alias.st "status -sb"
+	git config --global alias.lg "log --graph --pretty=oneline --decorate --date=short --abbrev-commit --branches"
+	git config --global alias.b "branch"
+	git config --global alias.br "branch -r"
+
+---
+
+あと、今回紹介していない内容はここ読めばだいたいのことが書かれています。
+
+[Pro Git](http://progit.org/book/ja/)
+
+---
+©2012 - hisasann

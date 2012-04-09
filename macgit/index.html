@@ -1,0 +1,434 @@
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  
+  <title>Macでgitを使う方法</title>
+  <link rel="stylesheet" href="./macgit_files/style.css" type="text/css" charset="utf-8" media="screen">
+  <link rel="stylesheet" href="./macgit_files/style(1).css" type="text/css" charset="utf-8" media="screen">
+  <link rel="stylesheet" href="./macgit_files/style(2).css" type="text/css" charset="utf-8" media="screen">
+  <link rel="stylesheet" href="./macgit_files/style(3).css" type="text/css" charset="utf-8" media="screen">
+  <link rel="stylesheet" href="./macgit_files/style(4).css" type="text/css" charset="utf-8" media="screen">
+  <link rel="stylesheet" href="./macgit_files/style(5).css" type="text/css" charset="utf-8" media="screen">
+  <link rel="stylesheet" href="./macgit_files/print.css" type="text/css" charset="utf-8" media="print">
+  </head>
+<body id="tm_webpreview_body" class="shiny">
+  <div id="tm_webpreview_content" class="shiny">
+<!--<base href="tm-file:///Users/hisamatsu/Dropbox/code/git/git資料/macgit.mdown">--><base href=".">
+<h1 id="macgit">Macでgitを使う方法</h1>
+
+<hr />
+
+<h2 id="git">gitをインストールするまで</h2>
+
+<h3 id="homebrew">Homebrewをインストールする</h3>
+
+<p><a href="http://mxcl.github.com/homebrew/," title="">Homebrew</a></p>
+
+<p>Macportsでもよいですが、今後を考えるとHomebrewのほうがよいかもしれません。</p>
+
+<p>以下は2行ではなく1行として実行してください。</p>
+
+<pre><code>ruby -e "$(/usr/bin/curl -fksSL https://raw.github.com/mxcl/homebrew/master/Library/Contributions/install_homebrew.rb)"
+</code></pre>
+
+<p>インストールはこれで完了です。</p>
+
+<p>（2012-03-16：バージョン0.8.1）</p>
+
+<h3 id="git">gitをインストールする</h3>
+
+<pre><code>$ brew install git
+</code></pre>
+
+<p>インストールはこれで完了です。</p>
+
+<h3 id="homebrew">Homebrewをアップデートする</h3>
+
+<p>一応ね！</p>
+
+<pre><code>$ brew update
+</code></pre>
+
+<hr />
+
+<h2 id="ssh_keygen">ssh-keygenで鍵を作成する</h2>
+
+<h3 id="ssh_keygen">ssh-keygenでキーをまだ作成したことがない場合</h3>
+
+<p>以下のコマンドでキーが作成されますでキーが作成されます。</p>
+
+<pre><code>$ ssh-keygen -t rsa
+</code></pre>
+
+<p>これにより、</p>
+
+<pre><code>.ssh/id_rsa
+.ssh/id_rsa.pub
+</code></pre>
+
+<p>が作成されます。
+あとは、各ユーザー管理サイトに「<strong>.ssh/id_rsa.pub</strong>」ファイルの中身をSSH Keyとして登録します。</p>
+
+<h3 id="ssh_keygengithub">ssh-keygenでキーをすでに作成している場合（githubを使っているなど）</h3>
+
+<p>gitでのユーザー管理は、<strong>公開鍵暗号方式</strong>を使っています。なので、秘密鍵と公開鍵の作成が必要です。</p>
+
+<p>以下のコマンドでキーが作成されます。</p>
+
+<pre><code>$ ssh-keygen -t rsa
+</code></pre>
+
+<p>すでに<strong>id_rsa</strong>というファイルが存在する場合、たとえばgithubを使っている方など、</p>
+
+<pre><code>$ ssh-keygen -t rsa -f .ssh/gitorious_rsa
+</code></pre>
+
+<p>のようにファイル名を指定して、キーを作成します。
+次に、</p>
+
+<pre><code>.ssh/config
+</code></pre>
+
+<p><strong>config</strong>ファイルを作成し、どのキーをどのHostの場合に使うかを定義します。</p>
+
+<pre><code>Host *
+  StrictHostKeyChecking no
+  ControlMaster auto
+  ControlPath   /tmp/%r@%h:%p
+  ServerAliveInterval 60
+  HashKnownHosts no
+  GSSAPIAuthentication no
+  GSSAPIKeyExchange no
+  AddressFamily inet
+
+Host gitorious.sample.local
+  Port 22
+  Hostname gitorious.sample.local
+  IdentityFile ~/.ssh/gitorious_rsa
+  TCPKeepAlive yes
+  IdentitiesOnly yes
+</code></pre>
+
+<p>これにより<strong>gitorious.sample.local</strong>のリポジトリにアクセスする場合のSSH Keyは<strong>.ssh/gitorious_rsa</strong>が使われます。</p>
+
+<p><a href="http://help.github.com/mac-set-up-git/">参考資料 - github</a></p>
+
+<hr />
+
+<h2 id="git">gitを使ってみる</h2>
+
+<h3 id="clone">リモートリポジトリからダウンロードする（clone）</h3>
+
+<p>まずは、ローカルにリモートリポジトリの内容をダウンロードします。</p>
+
+<pre><code>$ git clone git@gitorious.sample.local:repos/repos.git
+</code></pre>
+
+<p>これで<strong>repos</strong>というディレクトリが作成されていると思います。
+中に入ってみましょう。</p>
+
+<pre><code>$ cd repos
+</code></pre>
+
+<h3 id="status">ファイルを修正し変更ステータスを確認する（status）</h3>
+
+<pre><code>$ vim README
+</code></pre>
+
+<p>適当な文字を入力し保存します。
+これでこのファイルを編集したことになります。</p>
+
+<p><strong>git status</strong>で変更点を確認してみましょう。</p>
+
+<pre><code>$ git status -sb
+</code></pre>
+
+<p>sbはシンプルなstatusを表示するための引数です。</p>
+
+<p>結果以下のように表示されました。</p>
+
+<pre><code>## Initial commit on master
+ M README
+</code></pre>
+
+<p>変更したファイルREADMEが表示されました。</p>
+
+<p>このとき<strong>M</strong>という文字がREADMEの横に表示されていますが、これは<strong>modified</strong>になります。
+削除した場合は<strong>D</strong>が表示され、新規追加したファイルの場合は<strong>??</strong>が表示されていると思います。</p>
+
+<h3 id="addcommit">編集したファイルをローカルリポジトリにコミットする（add、commit）</h3>
+
+<p>では、変更したファイルをコミットします。</p>
+
+<p>SVNではコミットとはリモートリポジトリに対してでしたが、gitのコミットとはあくまでも<strong>ローカルリポジトリ</strong>に対して行われます。</p>
+
+<p>さらにどのファイルをコミットするかは<strong>git add</strong>を使います。</p>
+
+<p>順を追って解説します。</p>
+
+<pre><code>$ git add README
+</code></pre>
+
+<p>これでコミット対象にREADMEを含めたことになります。（まだコミットはされていません）</p>
+
+<pre><code>$ git commit -m "first commit"
+</code></pre>
+
+<p>これでようやくローカルリポジトリにコミットしたことになります。</p>
+
+<p>まだリモートリポジトリには反映されていません。あくまでもローカルでのコミットになります。</p>
+
+<h3 id="push">リモートリポジトリに反映する（push）</h3>
+
+<p><strong>git push</strong>をすることでリモートリポジトリに反映できます（SVNで言うところのコミットですね）</p>
+
+<pre><code>$ git push origin master
+</code></pre>
+
+<p>ローカルのmasterをリモートのoriginに反映するという意味になります。</p>
+
+<p>基本的にはファイルを編集、追加をし<strong>git add</strong>し、<strong>git commit</strong>していく作業がメインになり、最後に<strong>git push</strong>するというフローになると思います。</p>
+
+<h3 id="">コンフリクト（衝突）が発生してしまった場合</h3>
+
+<p>同じファイルを別々の人が修正、<strong>git push</strong>しようとするとコンフリクトしてしまう。</p>
+
+<p>Aさん</p>
+
+<pre><code>$ vim 1.html    #hogeと書きこむ
+$ git commit -a -m 'hoge'
+$ git push origin master
+</code></pre>
+
+<p>Bさん</p>
+
+<pre><code>$ vim 1.html    #fooと書きこむ
+$ git commit -a -m 'foo'
+$ git push origin master    #1
+</code></pre>
+
+<p>上記手順を踏むと、#1のところで、<strong>git pull</strong>してねと言われるので、してみると、</p>
+
+<pre><code>Auto-merging 1.html
+CONFLICT (content): Merge conflict in 1.html
+Automatic merge failed; fix conflicts and then commit the result.
+</code></pre>
+
+<p>こんなコンフリクトしたよーという内容のメッセージが表示される。</p>
+
+<pre><code>$ vim 1.html
+</code></pre>
+
+<p>をしてみると、</p>
+
+<pre><code>&lt;&lt;&lt;&lt;&lt;&lt;&lt; HEAD
+hoge
+=======
+foo
+&gt;&gt;&gt;&gt;&gt;&gt;&gt; 046658a2255fd924aaba0df5bb327cd9e319ae35
+</code></pre>
+
+<p>のように、コンフリクトしている箇所が表示される。</p>
+
+<pre><code>hoge
+foo
+</code></pre>
+
+<p>最終的に、このようにして<strong>git add</strong>してあげればコンフリクトが解決したことを意味する。</p>
+
+<pre><code>$ git commit -m 'コンフリクト解消'
+$ git push origin master
+</code></pre>
+
+<p>で<strong>git push</strong>すれば完了。</p>
+
+<hr />
+
+<h3 id="">用語</h3>
+
+<h4 id="">作業ツリー（ワーキングツリー）</h4>
+
+<p><strong>git add</strong>していないファイルたちを追加・修正・削除を行った場合に、反映される。
+つまり何かしら作業を開始すると自動的に作業ツリーに反映される。</p>
+
+<h4 id="">インデックス</h4>
+
+<p><strong>git add</strong>したファイルが反映される。</p>
+
+<h4 id="head">HEAD</h4>
+
+<p>最後に<strong>git commit</strong>したポイント</p>
+
+<h4 id="head">HEAD^</h4>
+
+<p>最後に<strong>git commit</strong>したポイントのさらにもう1個前のポイント</p>
+
+<h4 id="head2">HEAD~2</h4>
+
+<p>最後に<strong>git commit</strong>したポイントのさらにもう2個前のポイント</p>
+
+<h4 id="orig_head">ORIG_HEAD</h4>
+
+<p><strong>git reset</strong>を行った場合に、<strong>git reset</strong>を取り消したい場合に使用する。
+つまりHEADを移動させたときの、処理をUNDOするポイント。</p>
+
+<hr />
+
+<h3 id="git_addreset"><strong>git add</strong>したものを取り消したい（reset）</h3>
+
+<p>ファイルの編集を行い、<strong>git add</strong>したが、今回はこのファイルをコミットしたくないパターン。</p>
+
+<pre><code>$ vim hoge
+$ git add hoge
+</code></pre>
+
+<p><strong>git reset</strong>を使ってaddが取り消された状態になる。</p>
+
+<pre><code>$ git reset HEAD -- hoge
+</code></pre>
+
+<p>これで作業ツリーはそのままで、インデックスの内容がクリアされる。</p>
+
+<hr />
+
+<h3 id="1reset">複数コミットした場合に1つ前の状態に戻りたい（reset）</h3>
+
+<p>gitの良いところでもありますが、ローカルリポジトリで複数回のコミットを行うことができます。</p>
+
+<p>ある作業の塊単位で、<strong>git commit</strong>しておけば、それだけcommitの履歴も綺麗になります。</p>
+
+<p>その場合に、複数回コミットしたが、あるファイルを<strong>git add</strong>するのを忘れてしまっていたため、もう一度コミットをやり直したいという場合です。</p>
+
+<pre><code>$ touch hoge
+$ git add hoge
+$ git commit -m 'hoge-add'
+$ vim hoge
+$ touch foo                 # ここをgit addしていない
+$ git add hoge
+$ git commit -m 'hoge-modify'
+</code></pre>
+
+<p>こちらの操作では、本来fooというファイルもhoge-modifyのコミットに混ぜたかったのですが、間違えて<strong>git add</strong>するのを忘れています。
+そんなときにコミットをある特定のポイントに戻したい場合は、<strong>git reset</strong>を使います。</p>
+
+<pre><code>$ git reset --soft HEAD^
+</code></pre>
+
+<p><strong>HEAD^</strong>は用語でも触れていますが、最新のコミットの1つ前です。</p>
+
+<p>引数の解説は以下のとおり。</p>
+
+<p>&#8212;soft</p>
+
+<p>HEAD の位置のみを変更する。インデックス、ワーキングツリーには影響なし。</p>
+
+<p>&#8212;mixed (またはオプションなし)</p>
+
+<p>HEAD の位置とインデックスを変更する。ワーキングツリーには影響なし。</p>
+
+<p>&#8212;hard</p>
+
+<p>HEADの位置、インデックス、ワーキングツリーをすべて変更する。</p>
+
+<p>via <a href="http://d.hatena.ne.jp/murank/20110327/1301224770">git reset についてもまとめてみる</a></p>
+
+<p>補足として、2つ前に戻りたい場合は以下のようにする。</p>
+
+<pre><code>$ git reset --soft HEAD~2
+</code></pre>
+
+<h3 id="git_resetgit_reset">git resetしたがポイントを間違えたのでgit resetをなかったことにしたい</h3>
+
+<pre><code>$ git reset --soft ORIG_HEAD
+</code></pre>
+
+<h3 id="git_reset2orig_head">git resetを2回以上行ってしまいORIG_HEADがもうどこか分からない</h3>
+
+<p><strong>git reset</strong>を2回以上行ってしまうと、ORIG_HEADが1回目の<strong>git reset</strong>のポイントになってしまいます。
+こうなってくると分けが分からないので、便利な機能<strong>git reflog</strong>で戻るポイントを探しだす。</p>
+
+<pre><code>$ git reflog
+</code></pre>
+
+<p>して、戻りたいポイントを見つけ出し、</p>
+
+<pre><code>$ git reset --soft HEAD@{12}
+</code></pre>
+
+<p>で、戻る。</p>
+
+<p><strong>git reset</strong>と似ているので<strong>git revert</strong>がある。</p>
+
+<p>この違いは、</p>
+
+<p><strong>git reset</strong>はコミットをなかったことにし、ログも残さないが、</p>
+
+<p><strong>git revert</strong>はコミットをあるポイントに戻すというコミットを行う。
+結果、コミットログに[Revert] xxxxxのように書き込まれることになる。</p>
+
+<p><a href="http://tsukamoto.tumblr.com/post/267736584">Gitの取消練習</a></p>
+
+<h3 id="">ローカルでの作業をいろいろしていたらよくわからなくなったので、もとにもどしたい。</h3>
+
+<p>とくにコミット</p>
+
+<pre><code>$ git reset --hard HEAD
+</code></pre>
+
+<p>&#8212;hardは↑でも記載しているが、すべての変更をHEADの状態に戻すので、最後に<strong>git pull</strong>した状態に戻る。</p>
+
+<h3 id="git_push">git pushしたのをなかったことにしたい（使うな危険！）</h3>
+
+<p>以下のようにすでに<strong>git push</strong>してしまった、という状況でやっぱりなかったことにするパターンです。</p>
+
+<pre><code>$ git vim hoge
+$ git add hoge
+$ git commit -m 'hoge'
+$ git push origin master
+</code></pre>
+
+<p>ただし、これはもう混乱のもとで、ここでたとえリモートリポジトリを強制的に書き換えたとしても、
+他のこのブランチで作業している人たちは、<strong>git pull</strong>してもこれと同じ状態に戻りません。</p>
+
+<p>まだよく理解できていませんが、各々が自分でローカルリポジトリで<strong>git reset</strong>する必要があると思っています。</p>
+
+<pre><code>$ git reset --hard HEAD^
+$ git push -f origin HEAD:master
+</code></pre>
+
+<p>なので、これはやめましょう！
+<strong>git push</strong>したら、強制的（-f）に書き換えるではなく、<strong>git revert</strong>を使い新たなコミットとして<strong>git push</strong>しましょう</p>
+
+<p>これは<strong>git rebase</strong>も同じで、基本的に<strong>git push</strong>したものにやってはいけない。
+やると分けがわからなくなる。</p>
+
+<p>「時代は変えてはいけないのだよ。諸君。」</p>
+
+<hr />
+
+<h2 id="gitconfig">おすすめ.gitconfig</h2>
+
+<pre><code>git config --global color.ui auto
+git config --global color.diff auto
+git config --global color.status auto
+git config --global color.branch auto
+
+git config --global alias.co "checkout"
+git config --global alias.st "status -sb"
+git config --global alias.lg "log --graph --pretty=oneline --decorate --date=short --abbrev-commit --branches"
+git config --global alias.b "branch"
+git config --global alias.br "branch -r"
+</code></pre>
+
+<hr />
+
+<p>あと、今回紹介していない内容はここ読めばだいたいのことが書かれています。</p>
+
+<p><a href="http://progit.org/book/ja/">Pro Git</a></p>
+
+<hr />
+
+<p>©2012 - <a href="http://hisasann.com">hisasann</a></p>
+
+	</div>
+
+
+</body></html>
