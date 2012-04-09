@@ -363,7 +363,7 @@ via [git reset についてもまとめてみる](http://d.hatena.ne.jp/murank/2
 
 ---
 
-おすすめ.gitconfig
+おすすめ.gitconfigいろいろ
 -
 
 	git config --global color.ui auto
