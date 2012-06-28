@@ -323,7 +323,7 @@ via [git reset についてもまとめてみる](http://d.hatena.ne.jp/murank/2
 
 **git reset**はコミットをなかったことにし、ログも残さないが、
 
-**git revert**はコミットをあるポイントに戻すというコミットを行う。
+**git revert**はコミットをあるポイント打ち消すというコミットを行う。
 結果、コミットログに[Revert] xxxxxのように書き込まれることになる。
 
 [Gitの取消練習](http://tsukamoto.tumblr.com/post/267736584)
